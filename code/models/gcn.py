@@ -10,10 +10,12 @@ class GraphConvLayer(nn.Module):
         self.mem_dim = mem_dim
         self.layers = layers
         self.head_dim = self.mem_dim // self.layers
+        # 每一行把他单独拿出来  最后拼接到一起生成了一个特殊的矩阵
         self.gcn_drop = dropout
 
         # linear transformation
         self.linear_output = nn.Linear(self.mem_dim, self.mem_dim)
+        # 最后增加一个转化的过程
 
         # dcgcn block
         self.weight_list = nn.ModuleList()
@@ -28,6 +30,7 @@ class GraphConvLayer(nn.Module):
     def forward(self, adj, gcn_inputs):
         # gcn layer
         denom = adj.sum(2).unsqueeze(2) + 1
+        # batch, n, 1 所有内容的集合 还要+1 事实上这里还增加了一个对于自环的表达形式进行归一化
 
         outputs = gcn_inputs
         cache_list = [outputs]
@@ -40,7 +43,7 @@ class GraphConvLayer(nn.Module):
             # 把输入转化到head dim
             if self.self_loop:
                 AxW = AxW  + self.weight_list[l](outputs)  # self loop
-            #     在GNN中增加自环和残差层的性质其实是类似的
+            #     在GNN中增加自环和残差层的性质其实是类似的  这里其实是相当于增加了A中间的单位矩阵
             else:
                 AxW = AxW
 
@@ -57,6 +60,7 @@ class GraphConvLayer(nn.Module):
         # 注意resnet的做法不是在每层都要做，而是在开始和最后做，中间叠加的层次都不使用残差网络
 
         out = self.linear_output(gcn_outputs)
+        # 最后也要增加一个线性变换
 
         return out
 

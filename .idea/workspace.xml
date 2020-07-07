@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7fb2bf1b-0d88-42f9-8019-a6a972ded16a" name="Default Changelist" comment="" />
+    <list default="true" id="7fb2bf1b-0d88-42f9-8019-a6a972ded16a" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/config/Config.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/config/Config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/gen_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/gen_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/models/gcn.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/models/gcn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/models/lsr.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/models/lsr.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/models/reasoner.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/models/reasoner.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +37,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/data_gda" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1UmnTKbM5IXgUYzk6MqVoBdiHVC" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -139,10 +147,10 @@
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2381" y="182" key="SettingsEditor/0.0.1536.864/1920.0.1920.1080@1920.0.1920.1080" timestamp="1594041461850" />
-    <state x="2560" y="364" key="com.intellij.ide.util.TipDialog" timestamp="1594041200372">
+    <state x="2560" y="364" key="com.intellij.ide.util.TipDialog" timestamp="1594084640300">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="2560" y="364" key="com.intellij.ide.util.TipDialog/0.0.1536.864/1920.0.1920.1080@1920.0.1920.1080" timestamp="1594041200372" />
+    <state x="2560" y="364" key="com.intellij.ide.util.TipDialog/0.0.1536.864/1920.0.1920.1080@1920.0.1920.1080" timestamp="1594084640300" />
     <state x="2543" y="235" width="672" height="678" key="search.everywhere.popup" timestamp="1594044932822">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
@@ -153,12 +161,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code/config/Config.py</url>
-          <line>601</line>
+          <line>603</line>
           <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code/config/Config.py</url>
-          <line>690</line>
+          <line>692</line>
           <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>

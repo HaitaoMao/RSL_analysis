@@ -365,6 +365,7 @@ def Init(data_file_name, rel2id, max_length = 512, is_training = True, suffix=''
             #print(sen_wordstr[i][j])
             if j < max_length:
                 if word in word2id:
+                    # 如果在词典当中就转化成为对应的内容
                     sen_word[i][j] = word2id[word]
                 else:
                     sen_word[i][j] = word2id['UNK']
@@ -374,6 +375,7 @@ def Init(data_file_name, rel2id, max_length = 512, is_training = True, suffix=''
             for c_idx, k in enumerate(list(word)):
                 if c_idx>=char_limit:
                     break
+                # 最多记录一组单词当中的16个词汇
                 sen_char[i,j,c_idx] = char2id.get(k, char2id['UNK'])
 
         for j in range(j + 1, max_length):

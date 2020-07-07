@@ -355,8 +355,10 @@ class Config(object):
 
                 entity_num.append(len(ins['vertexSet']))
                 sentence_num.append(len(ins['sents']))
-                sentence_len.append(max([len(sent) for sent in ins['sents']])) # max sent len of a document
+                sentence_len.append(max([len(sent) for sent in ins['sents']]))
+                # max sent len of a document
                 node_num_per_sent.append(max(node_sent_num[i].tolist()))
+                # 记录一个document当中一个sentence当中最多的节点数目
 
                 sdp_position[i].copy_(torch.from_numpy(self.data_train_sdp_position[index]))
                 sdp_num[i].copy_(torch.from_numpy(self.data_train_sdp_num[index]))

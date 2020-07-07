@@ -19,6 +19,8 @@ class LSR(nn.Module):
         if not self.finetune_emb:
             self.word_emb.weight.requires_grad = False
 
+        # 这里可以改造把finetune的BERT加入进来
+
         self.ner_emb = nn.Embedding(13, config.entity_type_size, padding_idx=0)
 
         self.coref_embed = nn.Embedding(config.max_length, config.coref_size, padding_idx=0)
@@ -31,6 +33,7 @@ class LSR(nn.Module):
         self.linear_sent = nn.Linear(hidden_size * 2,  hidden_size)
 
         self.bili = torch.nn.Bilinear(hidden_size, hidden_size, hidden_size)
+        # 这行没用，可以删了
 
         self.self_att = SelfAttention(hidden_size)
         # 这个东西在哪里用过呢
@@ -76,10 +79,12 @@ class LSR(nn.Module):
         for batch_no in range(batch_size):
             sent_list = []
             sent_lens = []
-            sent_index = ((context_seg[batch_no] == 1).nonzero()).squeeze(-1).tolist() # array of start point for sentences in a document
+            sent_index = ((context_seg[batch_no] == 1).nonzero()).squeeze(-1).tolist()
+            # 根据掩码确定index的数目   [0,1,2,3,4......]这个样子
+            # array of start point for sentences in a document
             pre_index = 0
             for i, index in enumerate(sent_index):
-                # 这里的疑惑是不是第一个位置出现了一个初始的标识符号 需要在这里进行特殊的处理
+                # 第一个位置对应的是最初始的位置
                 if i != 0:
                     if i == 1:
                         sent_list.append(input_sent[batch_no][pre_index:index+1])
@@ -88,9 +93,12 @@ class LSR(nn.Module):
                         sent_list.append(input_sent[batch_no][pre_index+1:index+1])
                         sent_lens.append(index - pre_index)
                 pre_index = index
+            #     每一次都要进行对应的前移操作
 
             sents = pad_sequence(sent_list).permute(1,0,2)
+            # pad得到相似的长度
             sent_lens_t = torch.LongTensor(sent_lens).cuda()
+            # 真实长度的传入·
             docs_len.append(sent_lens)
             sents_output, sent_emb = self.rnn_sent(sents, sent_lens_t) # sentence embeddings for a document.
 
@@ -106,6 +114,7 @@ class LSR(nn.Module):
             sents_emb.append(sent_emb.squeeze(1))
 
         docs_emb = pad_sequence(docs_emb).permute(1,0,2) # B * # sentence * Dimention
+        # 在batch的层面上进行padding
         sents_emb = pad_sequence(sents_emb).permute(1,0,2)
         # pad sequence的具体使用方法，参照https://towardsdatascience.com/taming-lstms-variable-sized-mini-batches-and-why-pytorch-is-good-for-your-health-61d35642972e
 
@@ -139,7 +148,7 @@ class LSR(nn.Module):
         sent_emb = torch.cat([self.word_emb(context_idxs), self.coref_embed(pos), self.ner_emb(context_ner)], dim=-1)
         # 所有的节点也包括最基本的三个步骤
         docs_rep, sents_rep = self.doc_encoder(sent_emb, context_seg)
-        # 得到两个等级的描述方式
+        # 得到两个等级的描述方式  padding的方式不同
 
         max_doc_len = docs_rep.shape[1]
         context_output = self.dropout_rate(torch.relu(self.linear_re(docs_rep)))
@@ -148,6 +157,7 @@ class LSR(nn.Module):
         '''extract Mention node representations'''
         mention_num_list = torch.sum(mention_node_sent_num, dim=1).long().tolist()
         max_mention_num = max(mention_num_list)
+        # 还是为了减少cuda内存的占用 找到最多的mention数量减少representation
         mentions_rep = torch.bmm(mention_node_position[:, :max_mention_num, :max_doc_len], context_output) # mentions rep
         '''extract MDP(meta dependency paths) node representations'''
         sdp_num_list = sdp_num_list.long().tolist()
@@ -178,6 +188,7 @@ class LSR(nn.Module):
                 output = self.reasoner[i](output)
 
         elif self.use_struct_att:
+            # 注意这里是分开的两种情况 而不是合并起来的一种
             gcn_inputs, _ = self.structInduction(gcn_inputs)
             # 这里再做struct induction得到的结果有啥意义呢
             max_all_node_num = torch.max(all_node_num).item()

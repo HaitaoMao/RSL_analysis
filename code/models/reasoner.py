@@ -55,31 +55,54 @@ class StructInduction(nn.Module):
 
 
         f_ij = self.bilinear(tp, tc).squeeze()  # b*s, token , token
+        # lij中间的部分
         f_i = torch.exp(self.fi_linear(str_v)).squeeze()  # b*s, token
-
+        # sij中间ij的构建
         mask = torch.ones(f_ij.size(1), f_ij.size(1)) - torch.eye(f_ij.size(1), f_ij.size(1))
         mask = mask.unsqueeze(0).expand(f_ij.size(0), mask.size(0), mask.size(1)).cuda()
-        A_ij = torch.exp(f_ij) * mask
 
+        A_ij = torch.exp(f_ij) * mask
+        # 构建对应的概率矩阵
         """STEP2: Injecting structrual bias"""
         tmp = torch.sum(A_ij, dim=1)  # nan: dimension
         res = torch.zeros(batch_size, token_size, token_size).cuda()
         # tmp = torch.stack([torch.diag(t) for t in tmp])
         res.as_strided(tmp.size(), [res.stride(0), res.size(2) + 1]).copy_(tmp)
+        # Create a view of an existing torch.Tensor input with specified size, stride and storage_offset.
+        '''>>> x = torch.randn(3, 3)
+            >>> x
+            tensor([[ 0.9039,  0.6291,  1.0795],
+                    [ 0.1586,  2.1939, -0.4900],
+                    [-0.1909, -0.7503,  1.9355]])
+            >>> t = torch.as_strided(x, (2, 2), (1, 2))
+            根据大小 和对应发strides的距离进行改变
+            >>> t
+            tensor([[0.9039, 1.0795],
+                    [0.6291, 0.1586]])
+            >>> t = torch.as_strided(x, (2, 2), (1, 2), 1)
+            tensor([[0.6291, 0.1586],
+                    [1.0795, 2.1939]])
+            '''
         L_ij = -A_ij + res  # A_ij has 0s as diagonals
-
+        # 根据滑窗构造对应的对角矩阵的中间项  （这里的实现细节我们有机会再看）
         L_ij_bar = L_ij
         L_ij_bar[:, 0, :] = f_i
+        # 把f_i导入到Lij的矩阵中间
 
         LLinv = torch.inverse(L_ij_bar)
+        # 得到对应的对焦矩阵
 
         d0 = f_i * LLinv[:, :, 0]
+        # 我们利用第一个维度要做些什么呢 我不是很理解   取出第一个节点的出度矩阵
+        # todo 了解d0到底是什么意思
 
         LLinv_diag = torch.diagonal(LLinv, dim1=-2, dim2=-1).unsqueeze(2)
+        # 抽离出对角的所有元素
 
         tmp1 = (A_ij.transpose(1, 2) * LLinv_diag).transpose(1, 2)
+        # 这个应该是矩阵的上半部分   这个就为啥不能直接做矩阵的乘法呢(我实在是很迷惑)
         tmp2 = A_ij * LLinv.transpose(1, 2)
-
+        # 对应矩阵得下半部分  ij 和 ji对应两个部分
         temp11 = torch.zeros(batch_size, token_size, 1)
         temp21 = torch.zeros(batch_size, 1, token_size)
 
@@ -88,16 +111,19 @@ class StructInduction(nn.Module):
 
         mask1 = torch.cat([temp11, temp12], 2).cuda()
         mask2 = torch.cat([temp21, temp22], 1).cuda()
+        # 构造两个对饮给的矩阵 mask 对应的kronecker delta
 
         dx = mask1 * tmp1 - mask2 * tmp2
 
         d = torch.cat([d0.unsqueeze(1), dx], dim=1)
+        # 为什么要把d0添加上去转置 我完全难以理解这里的操作
         df = d.transpose(1, 2)
 
         ssr = torch.cat([self.exparam.repeat(batch_size, 1, 1), sem_v], 1)
         pinp = torch.bmm(df, ssr)
 
         cinp = torch.bmm(dx, sem_v)
+        # 这是最开始生成那个 把邻接矩阵转化过去
 
         finp = torch.cat([sem_v, pinp, cinp], dim=2)
 
@@ -186,6 +212,7 @@ class DynamicReasoner(nn.Module):
         '''
         '''Structure Induction'''
         _, att = self.struc_att(input)
+        # 这里生成的att有什么作用 所以他根本不要第一个维度
         '''Perform reasoning'''
         output = self.gcn(att[:, :, 1:], input)
         # 细节 att最后一个维度为什么舍去了
